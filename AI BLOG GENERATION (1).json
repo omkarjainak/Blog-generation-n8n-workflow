@@ -1,0 +1,198 @@
+{
+  "name": "AI BLOG GENERATION",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nMy name is Nathan.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        -416
+      ],
+      "id": "a64cfa05-eadd-4553-ab0b-d814d3a66527",
+      "name": "When chat message received",
+      "webhookId": "d435a0ec-4b85-4530-81d7-e54fbe0fe7b2",
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "retryOnFail": true,
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        736,
+        -192
+      ],
+      "id": "12cbc11b-d9f9-4bb3-97d9-2081e32b41ad",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "QWeMitH5OjsypJDw",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function Node\nreturn $input.all().map(item => {\n  return {\n    json: JSON.parse(item.json.output)\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -416
+      ],
+      "id": "a0ae4350-d422-4b27-a58c-21f74f218591",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic: {{$json.chatInput}}\n\nResearch this topic thoroughly and return insights in strict JSON format using the schema. \nYour response must cover:\n- Background context and historical perspective \n- Current trends and innovations \n- Key challenges or limitations \n- Important statistics with dates or figures \n- Future outlook and opportunities \n- Target audience (who would benefit most from this blog) \n- SEO keywords with high ranking potential \n- Recommended tones (authoritative, storytelling, data-driven, persuasive, conversational, etc.) \n- Suggested content outline (section-by-section structure) \n- Best practices to make the blog stand out in the top 1% globally \n- At least two credible citations (URLs from authoritative sources) \n\nReturn only valid JSON. Do not include markdown, asterisks, or line breaks. Ensure the output is clean, structured, and immediately usable by the next blog generation agent.\n",
+        "options": {
+          "systemMessage": "=You are a research assistant. \nReturn ONLY valid JSON. Do not include explanations, markdown, or text outside JSON. \nFollow this schema strictly:\n\n{\n  \"blog_topic\": [ \"{{ $json.chatInput }}\" ],\n  \"background\": [ \"string\", \"string\", \"string\" ],\n  \"current_trends\": [ \"string\", \"string\", \"string\" ],\n  \"challenges\": [ \"string\", \"string\", \"string\" ],\n  \"statistics\": [ \"string\", \"string\", \"string\" ],\n  \"future_outlook\": [ \"string\", \"string\", \"string\" ],\n  \"target_audience\": [ \"string\", \"string\", \"string\" ],\n  \"seo_keywords\": [ \"string\", \"string\", \"string\" ],\n  \"tone_recommendations\": [ \"string\", \"string\", \"string\" ],\n  \"content_outline\": [ \"string\", \"string\", \"string\" ],\n  \"best_practices\": [ \"string\", \"string\", \"string\" ],\n  \"citations\": [ \"url1\", \"url2\" ]\n}\n\nRules:\n- Each field must be an array of strings (not paragraphs).\n- Each string should be a single concise bullet point.\n- Each field can have multiple outputs depending on the topic.\n- Always output well-formed JSON only.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -416
+      ],
+      "id": "cd34b9db-d7db-4753-892c-9fbc4af4dd58",
+      "name": "Research"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        -192
+      ],
+      "id": "cab463ec-c233-4d5c-a78f-ab3167e26d74",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "QWeMitH5OjsypJDw",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert professional content writer. Using the JSON blog outline provided and the structured research data, write a full-length blog article in **Markdown format**.\n\nRequirements:\n- Length: ~1000 words\n- Include:\n  - Compelling **introduction**\n  - Main sections with clear headings and subheadings (from outline)\n  - **Conclusion** summarizing insights\n  - **Citations** at the end\n- Tone: Professional, authoritative, and approachable — readers should feel guided by an expert.\n- Formatting: \n  - Use Markdown (#, ##, ### for headings, bullets for lists, **bold** and *italic* for emphasis).\n  - Ensure readability and logical flow.\n- Facts, statistics, and claims must come strictly from the provided research.\n- No personal opinions unless explicitly stated in the research.\n\n**Input Data**:\n- Outline JSON: {{ $json.content_outline }}\n- Research Data:\n  - Background: {{$json.background}}\n  - Current Trends: {{$json.current_trends}}\n  - Challenges: {{$json.challenges}}\n  - Statistics: {{$json.statistics}}\n  - Future Outlook: {{$json.future_outlook}}\n  - Target Audience: {{$json.target_audience}}\n  - SEO Keywords: {{$json.seo_keywords}}\n  - Tone Recommendations: {{$json.tone_recommendations}}\n  - Best Practices: {{$json.best_practices}}\n  - Citations: {{$json.citations}}\n\nGenerate a complete Markdown blog article ready for publishing.\n",
+        "options": {
+          "systemMessage": "You are an expert professional content writer and technical communicator. Your task is to generate high-quality, structured, and authoritative blog content based on structured research provided by the research agent. Always follow these rules:\n\n1. Maintain a professional, authoritative, yet approachable tone suitable for business, technical, and professional audiences.\n2. For blog outlines:\n   - Output must be valid JSON.\n   - Include a \"title\" and \"sections\".\n   - Each \"section\" must contain:\n     - \"heading\": a concise section title\n     - \"points\": an array of subtopics or bullet points to expand on\n3. For full blog articles:\n   - Output must be in valid Markdown format.\n   - Word count target: ~1000 words.\n   - Structure:\n     - Compelling **introduction**\n     - Main sections with headings/subheadings (as per outline)\n     - **Conclusion** that reinforces insights\n     - **Citations** section with sources\n   - Formatting:\n     - Use #, ##, ### for headings\n     - Bullets for lists\n     - **bold** and *italic* for emphasis\n   - Ensure clarity, readability, and logical flow.\n   - Base all facts, statistics, and claims strictly on the provided research.\n   - Do not include personal opinions unless explicitly mentioned in the research data.\n4. Outputs must always be valid and parseable:\n   - JSON for outlines\n   - Markdown for articles\n5. Never add text outside of the required format.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1296,
+        -416
+      ],
+      "id": "60c278f0-8338-457c-9691-172cd262b3f3",
+      "name": "blog generation"
+    },
+    {
+      "parameters": {
+        "content": "## Research ai agent \n \ndoes the research work"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        112
+      ],
+      "id": "3971e7f3-d06b-44ef-99ab-911c5cca2748",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "blog generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "blog generation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "blog generation": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1b76bdbb-d717-4320-9c11-e1478affa67a",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aa6380a72a446e8ee9b2c652d95c07197e4b67503b6d9169643427d5b8eb5c3e"
+  },
+  "id": "VZ7rUhbzG1tbouXw",
+  "tags": []
+}
