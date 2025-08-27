@@ -1,6 +1,7 @@
 # Blog-generation-n8n-workflow
-## blog-topic: From Algorithms to Insights: The Journey of Turning Data into Decisions
-## generated content: The Journey from Algorithms to Invaluable Insights: Mastering Data-Driven Decisions
+# blog-topic: From Algorithms to Insights: The Journey of Turning Data into Decisions
+
+# generated content:
 
 # The Journey from Algorithms to Invaluable Insights: Mastering Data-Driven Decisions
 
